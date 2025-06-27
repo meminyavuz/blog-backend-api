@@ -2,6 +2,8 @@ const Article = require('../models/article.model.js');
 const Status = require('../models/status.model.js');
 const CreateArticleDTO = require('../dtos/article.dtos/createArticle.dto.js');
 const UpdateArticleDTO = require('../dtos/article.dtos/updateArticle.dto.js');
+const ListArticlesDTO = require('../dtos/article.dtos/listArticles.dto.js');
+const { Op } = require('sequelize');
 
 // Makale oluşturma
 const createArticle = async (req, res) => {
@@ -67,6 +69,7 @@ const updateArticle = async (req, res) => {
 // Makale silme
 const deleteArticle = async (req, res) => {
   try {
+
     const { id } = req.params;
 
     const article = await Article.findOne({ where: { id, authorId: req.user.id } });
@@ -85,20 +88,100 @@ const deleteArticle = async (req, res) => {
 // Tüm makaleleri listeleme (Admin için)
 const listAllArticles = async (req, res) => {
   try {
-    const articles = await Article.findAll();
-    res.status(200).json({ articles });
+    // DTO doğrulaması
+    const { error, value } = ListArticlesDTO.validate(req.query);
+
+    if (error) {
+      return res.status(400).json({ message: 'Validation error', error: error.details });
+    }
+
+    const { page = 1, limit = 10, authorId, title, status, order = 'desc' } = value;
+
+    const where = {};
+    if (authorId) where.authorId = authorId; // Yazara göre filtreleme
+    if (title) where.title = { [Op.like]: `%${title}%` }; // Başlıkta arama
+    if (status) where.statusId = status; // Duruma göre filtreleme
+
+    const articles = await Article.findAndCountAll({
+      where,
+      limit: parseInt(limit),
+      offset: (page - 1) * limit,
+      order: [['createdAt', order.toLowerCase() === 'asc' ? 'ASC' : 'DESC']], // Tarihe göre sıralama
+    });
+
+    res.status(200).json({
+      total: articles.count,
+      pages: Math.ceil(articles.count / limit),
+      data: articles.rows,
+    });
   } catch (err) {
-    res.status(500).json({ message: 'An error occurred while fetching articles.', error: err.message });
+    res.status(500).json({ message: 'An error occurred while fetching all articles.', error: err.message });
   }
 };
 
 // Kullanıcının kendi makalelerini listeleme
 const listUserArticles = async (req, res) => {
   try {
-    const articles = await Article.findAll({ where: { authorId: req.user.id } });
-    res.status(200).json({ articles });
+    // DTO doğrulaması
+    const { error, value } = ListArticlesDTO.validate(req.query);
+
+    if (error) {
+      return res.status(400).json({ message: 'Validation error', error: error.details });
+    }
+
+    const { page = 1, limit = 10, title, status, order = 'desc', authorId } = value;
+    
+    const where = { authorId: req.user.id }; // Sadece giriş yapan yazarın makaleleri
+    if(authorId) where.authorId = authorId; // Belirli bir yazarın makaleleri
+    if (title) where.title = { [Op.like]: `%${title}%` }; // Başlıkta arama
+    if (status) where.statusId = status; // Duruma göre filtreleme
+
+    const articles = await Article.findAndCountAll({
+      where,
+      limit: parseInt(limit),
+      offset: (page - 1) * limit,
+      order: [['createdAt', order.toLowerCase() === 'asc' ? 'ASC' : 'DESC']], // Tarihe göre sıralama
+    });
+
+    res.status(200).json({
+      total: articles.count,
+      pages: Math.ceil(articles.count / limit),
+      data: articles.rows,
+    });
   } catch (err) {
     res.status(500).json({ message: 'An error occurred while fetching your articles.', error: err.message });
+  }
+};
+
+const listPublishedArticles = async (req, res) => {
+  try {
+    const { page = 1, limit = 10, title, order = 'desc', authorId} = req.query;
+
+    //Veritabanından sadece published olan makaleleri al
+    const publishedStatus = await Status.findOne({ where: { name: 'published' } });
+
+    if (!publishedStatus) {
+      return res.status(400).json({ message: 'Published status not found in the database.' });
+    }
+
+    const where = { statusId: publishedStatus.id }; // Sadece "published" durumundaki makaleler
+    if(authorId) where.authorId = authorId
+    if (title) where.title = { [Op.like]: `%${title}%` }; // Başlıkta arama
+
+    const articles = await Article.findAndCountAll({
+      where,
+      limit: parseInt(limit),
+      offset: (page - 1) * limit,
+      order: [['createdAt', order.toLowerCase() === 'asc' ? 'ASC' : 'DESC']], // Tarihe göre sıralama
+    });
+
+    res.status(200).json({
+      total: articles.count,
+      pages: Math.ceil(articles.count / limit),
+      data: articles.rows,
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'An error occurred while fetching published articles.', error: err.message });
   }
 };
 
@@ -108,4 +191,5 @@ module.exports = {
   deleteArticle,
   listAllArticles,
   listUserArticles,
+  listPublishedArticles
 };

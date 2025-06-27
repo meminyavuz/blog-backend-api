@@ -4,21 +4,6 @@ const slugify = require('slugify');
 const Status = require('./status.model.js');
 const User = require('./user.model.js');
 
-// Benzersiz bir slug oluşturma fonksiyonu
-const generateUniqueSlug = async (title) => {
-  let slug = slugify(title, { lower: true, strict: true });
-  let uniqueSlug = slug;
-  let counter = 1;
-
-  // Benzersiz bir slug bulunana kadar döngü
-  while (await Article.findOne({ where: { slug: uniqueSlug } })) {
-    uniqueSlug = `${slug}-${counter}`;
-    counter++;
-  }
-
-  return uniqueSlug;
-};
-
 // Article modeli tanımı
 const Article = sequelize.define('Article', {
   id: {
@@ -76,5 +61,20 @@ const Article = sequelize.define('Article', {
 // İlişkiler
 Article.belongsTo(Status, { foreignKey: 'statusId' });
 Article.belongsTo(User, { foreignKey: 'authorId' });
+
+// Benzersiz bir slug oluşturma fonksiyonu
+const generateUniqueSlug = async (title) => {
+  let slug = slugify(title, { lower: true, strict: true });
+  let uniqueSlug = slug;
+  let counter = 1;
+
+  // Benzersiz bir slug bulunana kadar döngü
+  while (await Article.findOne({ where: { slug: uniqueSlug } })) {
+    uniqueSlug = `${slug}-${counter}`;
+    counter++;
+  }
+
+  return uniqueSlug;
+};
 
 module.exports = Article;

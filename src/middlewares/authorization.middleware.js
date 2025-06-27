@@ -1,6 +1,7 @@
 const roleMapping = {
   admin: process.env.ADMIN_ROLE_ID, // Admin rolüne karşılık gelen ID
   author: process.env.AUTHOR_ROLE_ID, // Author rolüne karşılık gelen ID
+  reader: process.env.READER_ROLE_ID // Reader rolüne karşılık gelen ID
 };
 
 export const isAdmin = (req, res, next) => {
