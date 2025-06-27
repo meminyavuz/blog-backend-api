@@ -1,8 +1,8 @@
 const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/database.js');
+const { sequelize } = require('../../config/database.js');
 const slugify = require('slugify');
 const Status = require('./status.model.js');
-const User = require('./user.model.js');
+const User = require('../user.models/user.model.js');
 
 // Article modeli tanımı
 const Article = sequelize.define('Article', {

@@ -1,23 +1,23 @@
 {
   "development": {
-    "username": "${DB_USERNAME}",
-    "password": "${DB_PASSWORD}",
-    "database": "${DB_DATABASE}",
-    "host": "${DB_HOST}",
-    "dialect": "${DB_DIALECT}"
+    "username": "root",
+    "password": "Mehmet0808!",
+    "database": "blog_api",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
   },
   "test": {
-    "username": "${DB_USERNAME}",
-    "password": "${DB_PASSWORD}",
+    "username": "root",
+    "password": "Mehmet0808!",
     "database": "database_test",
-    "host": "${DB_HOST}",
-    "dialect": "${DB_DIALECT}"
+    "host": "127.0.0.1",
+    "dialect": "mysql"
   },
   "production": {
-    "username": "${DB_USERNAME}",
+    "username": "root",
     "password": null,
     "database": "database_production",
-    "host": "${DB_HOST}",
-    "dialect": "${DB_DIALECT}"
+    "host": "127.0.0.1",
+    "dialect": "mysql"
   }
 }

@@ -8,11 +8,13 @@ const {
   deleteArticle,
   listAllArticles,
   listUserArticles,
-  listPublishedArticles
+  listPublishedArticles,
+  getArticleBySlug
 } = require('../controllers/article.controller');
 
 //Readerlar için
 router.get('/published', authenticate, listPublishedArticles);
+router.get('/:slug', authenticate, getArticleBySlug);
 
 // Yazarlar için
 router.get('/my-articles', authenticate, isAuthor, listUserArticles);

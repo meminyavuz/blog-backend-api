@@ -5,6 +5,7 @@ const dotenv = require('dotenv');
 const { sequelize } = require('./config/database.js');
 const userRoutes = require('./routes/user.routes.js');
 const articleRoutes = require('./routes/article.routes.js');
+ const commentRoutes = require('./routes/comment.routes.js');
 const { connectRabbitMQ } = require('./services/rabbitmq.service.js');
 
 dotenv.config();
@@ -26,6 +27,7 @@ app.use(morgan('dev'));
 // Routes
 app.use('/api/users', userRoutes);
 app.use('/api/articles', articleRoutes);
+app.use('/api/comments', commentRoutes);
 
 app.get('/', (req, res) => {
   res.send('Blog API is running...');

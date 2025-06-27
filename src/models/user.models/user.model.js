@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/database');
+const { sequelize } = require('../../config/database');
 const Role = require('./role.model');
 const bcrypt = require('bcrypt'); // Şifre hashleme için bcrypt modülü
 

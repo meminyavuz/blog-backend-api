@@ -1,5 +1,5 @@
-const Article = require('../models/article.model.js');
-const Status = require('../models/status.model.js');
+const Article = require('../models/article.models/article.model.js');
+const Status = require('../models/article.models/status.model.js');
 const CreateArticleDTO = require('../dtos/article.dtos/createArticle.dto.js');
 const UpdateArticleDTO = require('../dtos/article.dtos/updateArticle.dto.js');
 const ListArticlesDTO = require('../dtos/article.dtos/listArticles.dto.js');
@@ -85,6 +85,22 @@ const deleteArticle = async (req, res) => {
   }
 };
 
+// Slug ile makale getirme
+const getArticleBySlug = async (req, res) => {
+  try {
+    const { slug } = req.params;
+
+    const article = await Article.findOne({ where: { slug } });
+    if (!article) {
+      return res.status(404).json({ message: 'Article not found.' });
+    }
+
+    res.status(200).json({ article });
+  } catch (err) {
+    res.status(500).json({ message: 'An error occurred while fetching the article.', error: err.message });
+  }
+};
+
 // Tüm makaleleri listeleme (Admin için)
 const listAllArticles = async (req, res) => {
   try {
@@ -130,9 +146,9 @@ const listUserArticles = async (req, res) => {
     }
 
     const { page = 1, limit = 10, title, status, order = 'desc', authorId } = value;
-    
+
     const where = { authorId: req.user.id }; // Sadece giriş yapan yazarın makaleleri
-    if(authorId) where.authorId = authorId; // Belirli bir yazarın makaleleri
+    if (authorId) where.authorId = authorId; // Belirli bir yazarın makaleleri
     if (title) where.title = { [Op.like]: `%${title}%` }; // Başlıkta arama
     if (status) where.statusId = status; // Duruma göre filtreleme
 
@@ -155,7 +171,7 @@ const listUserArticles = async (req, res) => {
 
 const listPublishedArticles = async (req, res) => {
   try {
-    const { page = 1, limit = 10, title, order = 'desc', authorId} = req.query;
+    const { page = 1, limit = 10, title, order = 'desc', authorId } = req.query;
 
     //Veritabanından sadece published olan makaleleri al
     const publishedStatus = await Status.findOne({ where: { name: 'published' } });
@@ -165,7 +181,7 @@ const listPublishedArticles = async (req, res) => {
     }
 
     const where = { statusId: publishedStatus.id }; // Sadece "published" durumundaki makaleler
-    if(authorId) where.authorId = authorId
+    if (authorId) where.authorId = authorId
     if (title) where.title = { [Op.like]: `%${title}%` }; // Başlıkta arama
 
     const articles = await Article.findAndCountAll({
@@ -191,5 +207,6 @@ module.exports = {
   deleteArticle,
   listAllArticles,
   listUserArticles,
-  listPublishedArticles
+  listPublishedArticles,
+  getArticleBySlug
 };

@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/database.js');
+const { sequelize } = require('../../config/database');
 
-const Role = sequelize.define('Role', {
+const Status = sequelize.define('Status', {
   id: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
@@ -9,12 +9,12 @@ const Role = sequelize.define('Role', {
   },
   name: {
     type: DataTypes.STRING,
+    unique: true,
     allowNull: false,
-    unique: true, // UNIQUE tanımı burada
   },
 }, {
-  tableName: 'Roles',
+    tableName: 'Statuses', // Veritabanında kullanılacak tablo adı
   timestamps: false,
 });
 
-module.exports = Role;
+module.exports = Status;

@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
-const User = require('../models/user.model');
-const Role = require('../models/role.model');
+const User = require('../models/user.models/user.model');
+const Role = require('../models/user.models/role.model');
 const registerDTO = require('../dtos/user.dtos/register.dto');
 const loginDTO = require('../dtos/user.dtos/login.dto');
 const forgotPasswordDTO = require('../dtos/user.dtos/forgotPassword.dto');
@@ -200,6 +200,37 @@ const verifyEmail = async (req, res) => {
       res.status(400).json({ message: 'Invalid token.' });
     }
   };
+
+  const assignRole = async (req, res) => {
+    try {
+        // Admin kontrolü
+        if (req.user.roleId !== process.env.ADMIN_ROLE_ID) {
+            return res.status(403).json({ message: 'Access denied. Only admins can assign roles.' });
+        }
+
+        const { userId, roleId } = req.body;
+
+        // Kullanıcıyı bul
+        const user = await User.findByPk(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+
+        // Yeni rolü bul
+        const role = await Role.findByPk(roleId);
+        if (!role) {
+            return res.status(404).json({ message: 'Role not found.' });
+        }
+
+        // Kullanıcının rolünü güncelle
+        user.roleId = role.id;
+        await user.save();
+
+        res.status(200).json({ message: 'Role assigned successfully.', user });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
   
 
-module.exports = { register, login, forgotPassword, resetPassword, updateProfile, verifyEmail };
+module.exports = { register, login, forgotPassword, resetPassword, updateProfile, verifyEmail, assignRole };
