@@ -1,8 +1,8 @@
 const { DataTypes } = require('sequelize');
-const bcrypt = require('bcrypt');
 const { sequelize } = require('../config/database');
+const Role = require('./role.model');
+const bcrypt = require('bcrypt'); // Şifre hashleme için bcrypt modülü
 
-// Kullanıcı Modeli
 const User = sequelize.define('User', {
   id: {
     type: DataTypes.UUID,
@@ -18,28 +18,34 @@ const User = sequelize.define('User', {
     unique: true,
     allowNull: false,
     validate: {
-      isEmail: true, // Email formatını doğrular
+      isEmail: true,
     },
   },
   password: {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  role: {
-    type: DataTypes.ENUM('admin', 'author', 'reader'),
-    defaultValue: 'reader',
+  roleId: {
+    type: DataTypes.UUID,
+    allowNull: false,
+    references: {
+      model: Role, // Role tablosuna referans
+      key: 'id',
+    },
   },
   isVerified: {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
   },
   photoUrl: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING, // Fotoğraf URL'si
     allowNull: true,
   },
 }, {
+  tableName: 'Users', // Veritabanında kullanılacak tablo adı
+  timestamps: true,
   hooks: {
-    // Şifreyi kaydetmeden önce hashle
+    // Şifre hashleme işlemi
     beforeCreate: async (user) => {
       if (user.password) {
         const salt = await bcrypt.genSalt(10);
@@ -53,21 +59,20 @@ const User = sequelize.define('User', {
       }
     },
   },
-  timestamps: true, // createdAt ve updatedAt alanlarını otomatik ekler
 });
 
-// Şifre Doğrulama Metodu
+// Benzersiz email kontrolü
+User.addHook('beforeValidate', async (user, options) => {
+  const existingUser = await User.findOne({ where: { email: user.email } });
+  if (existingUser && existingUser.id !== user.id) {
+    throw new Error('Email already in use');
+  }
+});
+
+//Şifre doğrulama
 User.prototype.validatePassword = async function (password) {
-  return await bcrypt.compare(password, this.password);
+  return bcrypt.compare(password, this.password);
 };
-
-// Kullanıcıdan şifreyi kaldırarak JSON döndürme
-User.prototype.toJSON = function () {
-  const values = { ...this.get() };
-  delete values.password; // Şifreyi JSON'dan kaldır
-  return values;
-};
-
 
 
 module.exports = User;

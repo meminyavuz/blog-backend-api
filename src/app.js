@@ -1,13 +1,23 @@
-import express from 'express';
-import cors from 'cors';
-import morgan from 'morgan';
-import { sequelize } from './config/database.js';
-import userRoutes from './routes/user.routes.js';
-import dotenv from 'dotenv';
+const express = require('express');
+const cors = require('cors');
+const morgan = require('morgan');
+const dotenv = require('dotenv');
+const { sequelize } = require('./config/database.js');
+const userRoutes = require('./routes/user.routes.js');
+const articleRoutes = require('./routes/article.routes.js');
+const { connectRabbitMQ } = require('./services/rabbitmq.service.js');
 
 dotenv.config();
 
 const app = express();
+
+const requiredEnvVars = ['DB_NAME', 'DB_USER', 'DB_PASSWORD', 'DB_HOST', 'PORT'];
+requiredEnvVars.forEach((varName) => {
+  if (!process.env[varName]) {
+    console.error(`Environment variable ${varName} is missing!`);
+    process.exit(1);
+  }
+});
 
 app.use(cors());
 app.use(express.json());
@@ -15,6 +25,7 @@ app.use(morgan('dev'));
 
 // Routes
 app.use('/api/users', userRoutes);
+app.use('/api/articles', articleRoutes);
 
 app.get('/', (req, res) => {
   res.send('Blog API is running...');
@@ -30,12 +41,19 @@ app.listen(PORT, async () => {
   } catch (err) {
     console.error('DB connection failed:', err);
   }
-});
 
-sequelize.sync({ alter: true }) 
-  .then(() => {
+  try {
+    await sequelize.sync({ alter: false });
     console.log('Database synchronized!');
-  })
-  .catch((err) => {
+  } catch (err) {
     console.error('Database synchronization failed:', err);
-  });
+  }
+
+  try {
+    await connectRabbitMQ();
+    console.log('RabbitMQ connected!');
+  } catch (err) {
+    console.error('RabbitMQ connection failed:', err);
+    process.exit(1);
+  }
+});
