@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { authenticate } = require('../middlewares/auth.middleware');
-const { isAdmin, isAuthor } = require('../middlewares/authorization.middleware');
+const { isAdmin, isAuthor, isAdminOrAuthor } = require('../middlewares/authorization.middleware');
 const {
   createArticle,
   updateArticle,
@@ -11,19 +11,28 @@ const {
   listPublishedArticles,
   getArticleBySlug
 } = require('../controllers/article.controller');
+const cacheMiddleware = require('../middlewares/cache.middleware');
+const { publishedArticlesLimiter } = require('../middlewares/rateLimit.middleware');
+
 
 //Readerlar için
-router.get('/published', authenticate, listPublishedArticles);
-router.get('/:slug', authenticate, getArticleBySlug);
+router.get('/published', authenticate, publishedArticlesLimiter, cacheMiddleware(600), listPublishedArticles);
 
 // Yazarlar için
-router.get('/my-articles', authenticate, isAuthor, listUserArticles);
+router.get('/my-articles', authenticate, isAuthor, cacheMiddleware(600), listUserArticles);
+
 router.post('/create', authenticate, isAuthor, createArticle);
-router.put('/:xm', authenticate, isAuthor, updateArticle);
-router.delete('/:id', authenticate, isAuthor, deleteArticle);
  
 // Admin için
-router.get('/all', authenticate, isAdmin, listAllArticles);
-router.put('/admin/:id', authenticate, isAdmin, updateArticle);
+router.get('/all', authenticate, isAdmin, cacheMiddleware(600), listAllArticles);
+
+
+//dinamik route en sona tanımlanmalı
+router.get('/:slug', authenticate, getArticleBySlug);
+
+router.put('/:id', authenticate, isAdminOrAuthor, updateArticle);
+
+router.delete('/:id', authenticate, isAdminOrAuthor, deleteArticle);
+
 
 module.exports = router;

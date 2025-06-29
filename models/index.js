@@ -37,6 +37,16 @@ Object.keys(db).forEach(modelName => {
   }
 });
 
+// İlişkileri tanımlayın
+db.Article.belongsTo(db.User, { foreignKey: 'authorId', as: 'author' });
+db.User.hasMany(db.Article, { foreignKey: 'authorId', as: 'articles' });
+
+db.Article.hasMany(db.Comment, { foreignKey: 'articleId', as: 'comments' });
+db.Comment.belongsTo(db.Article, { foreignKey: 'articleId', as: 'article' });
+
+db.Comment.belongsTo(db.User, { foreignKey: 'userId', as: 'owner' });
+db.User.hasMany(db.Comment, { foreignKey: 'userId', as: 'comments' });
+
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 

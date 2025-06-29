@@ -1,9 +1,8 @@
 const Joi = require('joi');
 
-// Yorum oluşturma DTO'su
-const createCommentDto = Joi.object({
+const createCommentDTO = Joi.object({
     articleId: Joi.string().uuid().required(),
-    content: Joi.string().min(1).required()
+    content: Joi.string().min(1).max(500).required(),
 });
 
-module.exports = { createCommentDto };
+module.exports =  createCommentDTO;

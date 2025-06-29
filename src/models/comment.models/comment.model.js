@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../../config/database');
-const Article = require('../article.models/article.model'); // Article modelini içe aktar
-const User = require('../user.models/user.model'); // User modelini içe aktar
+const User = require('../user.models/user.model'); // User modelini içe aktarın
+
 
 const Comment = sequelize.define('Comment', {
     id: {
@@ -17,25 +17,28 @@ const Comment = sequelize.define('Comment', {
         type: DataTypes.UUID,
         allowNull: false,
         references: {
-            model: Article, // Article modeline referans
+            model: 'Articles', // Tablo adı
             key: 'id',
         },
         onUpdate: 'CASCADE',
-        onDelete: 'CASCADE', // Makale silindiğinde yorumlar da silinir
+        onDelete: 'CASCADE',
     },
     userId: {
         type: DataTypes.UUID,
         allowNull: false,
         references: {
-            model: User, // User modeline referans
+            model: 'Users', // Tablo adı
             key: 'id',
         },
         onUpdate: 'CASCADE',
-        onDelete: 'CASCADE', // Kullanıcı silindiğinde yorumlar da silinir
+        onDelete: 'CASCADE',
     },
-},{
-    tableName: 'Comments', // Veritabanında kullanılacak tablo adı
-}
-);
+}, {
+    tableName: 'Comments',
+});
+
+Comment.associate = (models) => {
+    Comment.belongsTo(models.User, { as: 'user', foreignKey: 'userId' });
+};
 
 module.exports = Comment;

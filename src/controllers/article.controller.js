@@ -1,15 +1,15 @@
 const Article = require('../models/article.models/article.model.js');
 const Status = require('../models/article.models/status.model.js');
-const CreateArticleDTO = require('../dtos/article.dtos/createArticle.dto.js');
-const UpdateArticleDTO = require('../dtos/article.dtos/updateArticle.dto.js');
-const ListArticlesDTO = require('../dtos/article.dtos/listArticles.dto.js');
+const createArticleDTO = require('../dtos/article.dtos/createArticle.dto.js');
+const updateArticleDTO = require('../dtos/article.dtos/updateArticle.dto.js');
+const listArticlesDTO = require('../dtos/article.dtos/listArticles.dto.js');
 const { Op } = require('sequelize');
 
 // Makale oluşturma
 const createArticle = async (req, res) => {
   try {
     // DTO doğrulaması
-    const { error, value } = CreateArticleDTO.validate(req.body);
+    const { error, value } = createArticleDTO.validate(req.body);
     if (error) {
       return res.status(400).json({ message: 'Validation error', error: error.details });
     }
@@ -40,8 +40,11 @@ const createArticle = async (req, res) => {
 // Makale düzenleme
 const updateArticle = async (req, res) => {
   try {
+    console.log(req.user.id);
+    console.log(req.params.id);
+
     // DTO doğrulaması
-    const { error, value } = UpdateArticleDTO.validate(req.body);
+    const { error, value } = updateArticleDTO.validate(req.body);
     if (error) {
       return res.status(400).json({ message: 'Validation error', error: error.details });
     }
@@ -104,8 +107,11 @@ const getArticleBySlug = async (req, res) => {
 // Tüm makaleleri listeleme (Admin için)
 const listAllArticles = async (req, res) => {
   try {
+    console.log('Query Params:', req.query); // Gelen sorgu parametrelerini logla
+    console.log('User:', req.user); // Kullanıcı bilgilerini logla
+
     // DTO doğrulaması
-    const { error, value } = ListArticlesDTO.validate(req.query);
+    const { error, value } = listArticlesDTO.validate(req.query);
 
     if (error) {
       return res.status(400).json({ message: 'Validation error', error: error.details });
@@ -139,7 +145,7 @@ const listAllArticles = async (req, res) => {
 const listUserArticles = async (req, res) => {
   try {
     // DTO doğrulaması
-    const { error, value } = ListArticlesDTO.validate(req.query);
+    const { error, value } = listArticlesDTO.validate(req.query);
 
     if (error) {
       return res.status(400).json({ message: 'Validation error', error: error.details });
@@ -171,7 +177,12 @@ const listUserArticles = async (req, res) => {
 
 const listPublishedArticles = async (req, res) => {
   try {
-    const { page = 1, limit = 10, title, order = 'desc', authorId } = req.query;
+    const { error, value } = listArticlesDTO.validate(req.query);
+    if (error) {
+      return res.status(400).json({ message: 'Validation error', error: error.details });
+    }
+
+    const { page = 1, limit = 10, title, order = 'desc', authorId } = value;
 
     //Veritabanından sadece published olan makaleleri al
     const publishedStatus = await Status.findOne({ where: { name: 'published' } });

@@ -1,6 +1,6 @@
 const Joi = require('joi');
 
-const ListArticlesDTO = Joi.object({
+const listArticlesDTO = Joi.object({
   page: Joi.number().integer().min(1).default(1),
   limit: Joi.number().integer().min(1).default(10),
   authorId: Joi.string().uuid().optional(),
@@ -9,4 +9,4 @@ const ListArticlesDTO = Joi.object({
   order: Joi.string().valid('asc', 'desc').default('desc'),
 });
 
-module.exports = ListArticlesDTO;
+module.exports = listArticlesDTO;

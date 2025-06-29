@@ -1,10 +1,14 @@
 const Comment = require('../models/comment.models/comment.model'); 
 const Article = require('../models/article.models/article.model'); 
+const User = require('../models/user.models/user.model');
+const createCommentDTO = require('../dtos/comment.dtos/createComment.dto');
+const updateCommentDTO = require('../dtos/comment.dtos/updateComment.dto');
 
 const createComment = async (req, res) => {
     try {
+        console.log(createCommentDTO);
         // DTO doğrulaması
-        const { error, value } = createCommentDto.validate(req.body);
+        const { error, value } = createCommentDTO.validate(req.body);
         if (error) {
             return res.status(400).json({ message: error.details[0].message });
         }
@@ -69,7 +73,7 @@ const updateComment = async (req, res) => {
         const { id } = req.params; // Yorum ID'si
 
         // DTO doğrulaması
-        const { error, value } = createCommentDto.validate(req.body);
+        const { error, value } = updateCommentDTO.validate(req.body);
         if (error) {
             return res.status(400).json({ message: error.details[0].message });
         }
@@ -102,7 +106,19 @@ const listCommentsByArticle = async (req, res) => {
 
         // Makale kontrolü
         const article = await Article.findByPk(articleId, {
-            include: [{ model: Comment, include: [User] }], // Yorumları ve kullanıcı bilgilerini dahil et
+            include: [
+                {
+                    model: Comment,
+                    as: 'comments', // İlişki adı
+                    include: [
+                        {
+                            model: User,
+                            as: 'User', // Kullanıcı ilişkisi adı
+                            attributes: ['id', 'fullName', 'email'], // Kullanıcı bilgilerini dahil et
+                        },
+                    ],
+                },
+            ],
         });
 
         if (!article) {
