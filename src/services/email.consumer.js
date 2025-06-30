@@ -36,4 +36,4 @@ const consumeQueue = async () => {
   }
 };
 
-consumeQueue();
+module.exports = consumeQueue;

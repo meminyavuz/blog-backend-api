@@ -2,13 +2,20 @@ const amqp = require('amqplib');
 
 let channel;
 
-// RabbitMQ bağlantısını kur
+// RabbitMQ bağlantısını kur ve kanalı başlat
 const connectRabbitMQ = async () => {
   try {
-    const connection = await amqp.connect(process.env.RABBITMQ_URL || 'amqp://localhost');
-    channel = await connection.createChannel();
-  } catch (err) {
-    console.error('RabbitMQ connection failed:', err);
+    const connection = await amqp.connect({
+      hostname: process.env.RABBITMQ_HOST || 'rabbitmq',
+      port: process.env.RABBITMQ_PORT || 5672,
+      username: process.env.RABBITMQ_USER || 'guest',
+      password: process.env.RABBITMQ_PASS || 'guest',
+    });
+
+    channel = await connection.createChannel(); // Kanalı oluştur
+    console.log('RabbitMQ channel initialized!');
+  } catch (error) {
+    console.error('RabbitMQ connection failed:', error);
   }
 };
 
