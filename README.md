@@ -59,7 +59,7 @@ Kullanıcılar makale oluşturabilir, yorum yapabilir ve rollere göre yetkilend
 
     a. Veritabanını oluştur:
 
-        CREATE DATABASE blog_backend_api;
+        CREATE DATABASE blog_api;
 
     b. src/config/database.js dosyasını kontrol et:
 
