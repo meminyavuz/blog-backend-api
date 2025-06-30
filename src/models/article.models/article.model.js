@@ -1,9 +1,8 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../../config/database.js');
 const slugify = require('slugify');
-const Status = require('../article.models/status.model.js');
+const Status = require('./status.model.js');
 const User = require('../user.models/user.model.js');
-const Comment = require('../comment.models/comment.model.js');
 
 // Article modeli tanımı
 const Article = sequelize.define('Article', {
@@ -60,9 +59,11 @@ const Article = sequelize.define('Article', {
 });
 
 // İlişkiler
-Article.belongsTo(Status, { foreignKey: 'statusId' });
-Article.belongsTo(User, { foreignKey: 'authorId' });
-Article.hasMany(Comment, { foreignKey: 'articleId', as: 'comments' });
+Article.associate = (models) => {
+  Article.belongsTo(models.User, { foreignKey: 'authorId', as: 'author' }); // Makale -> Kullanıcı
+  Article.belongsTo(models.Status, { foreignKey: 'statusId', as: 'status' }); // Makale -> Durum
+  Article.hasMany(models.Comment, { foreignKey: 'articleId', as: 'comments' }); // Makale -> Yorumlar
+};
 
 // Benzersiz bir slug oluşturma fonksiyonu
 const generateUniqueSlug = async (title) => {

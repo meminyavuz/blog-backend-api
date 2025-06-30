@@ -102,33 +102,52 @@ const updateComment = async (req, res) => {
 
 const listCommentsByArticle = async (req, res) => {
     try {
-        const { articleId } = req.params;
+        const { articleId } = req.params; // Makale ID'sini al
+        console.log(articleId);
 
-        // Makale kontrolü
+        // Makaleyi getir
         const article = await Article.findByPk(articleId, {
-            include: [
-                {
-                    model: Comment,
-                    as: 'comments', // İlişki adı
-                    include: [
-                        {
-                            model: User,
-                            as: 'User', // Kullanıcı ilişkisi adı
-                            attributes: ['id', 'fullName', 'email'], // Kullanıcı bilgilerini dahil et
-                        },
-                    ],
-                },
-            ],
+            attributes: ['id', 'title', 'content'], // Makale bilgileri
         });
 
         if (!article) {
             return res.status(404).json({ message: 'Article not found.' });
         }
 
-        res.status(200).json({ comments: article.Comments });
+        // Makaleye ait yorumları getir
+        const comments = await Comment.findAll({
+            where: { articleId }, // Yorumları makale ID'sine göre filtrele
+            attributes: ['id', 'content', 'createdAt'], // Yorum bilgileri
+        });
+
+        if (!comments || comments.length === 0) {
+            return res.status(404).json({ message: 'No comments found for this article.' });
+        }
+
+        // Yorumlara ait kullanıcıları getir
+        const userIds = comments.map((comment) => comment.userId); // Yorumlardaki kullanıcı ID'lerini al
+        const users = await User.findAll({
+            where: { id: userIds }, // Kullanıcıları ID'lerine göre filtrele
+            attributes: ['id', 'fullName', 'email'], // Kullanıcı bilgileri
+        });
+
+        // Yorumları ve kullanıcıları birleştir
+        const commentsWithUsers = comments.map((comment) => {
+            const user = users.find((u) => u.id === comment.userId); // Yorumun kullanıcısını bul
+            return {
+                ...comment.toJSON(),
+                user, // Kullanıcı bilgilerini ekle
+            };
+        });
+
+        // Sonuçları döndür
+        res.status(200).json({
+            article,
+            comments: commentsWithUsers,
+        });
     } catch (err) {
+        console.error(err); // Hata detaylarını logla
         res.status(500).json({ message: 'An error occurred while fetching comments.', error: err.message });
     }
 };
-
 module.exports = { createComment, deleteComment, updateComment, listCommentsByArticle };

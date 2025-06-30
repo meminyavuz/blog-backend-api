@@ -1,4 +1,4 @@
-import Article from '../models/article.models/article.model.js'; // Article modelini içe aktar
+const Article = require('../models/article.models/article.model.js'); // Article modelini içe aktar
 
 const roleMapping = {
   admin: process.env.ADMIN_ROLE_ID, // Admin rolüne karşılık gelen ID
@@ -6,27 +6,27 @@ const roleMapping = {
   reader: process.env.READER_ROLE_ID // Reader rolüne karşılık gelen ID
 };
 
-export const isAdmin = (req, res, next) => {
+const isAdmin = (req, res, next) => {
   if (req.user.roleId !== roleMapping.admin) {
     return res.status(403).json({ message: 'Access denied. Admins only.' });
   }
   next();
 };
 
-export const isAuthor = (req, res, next) => {
+const isAuthor = (req, res, next) => {
   if (req.user.roleId !== roleMapping.author) {
     return res.status(403).json({ message: 'Access denied. Authors only.' });
   }
   next();
 };
 
-export const isAdminOrAuthor = async (req, res, next) => {
+const isAdminOrAuthor = async (req, res, next) => {
   try {
     // Eğer kullanıcı admin ise, işlemi devam ettir
     if (req.user.roleId === roleMapping.admin) {
       return next();
     }
- 
+
     // Eğer kullanıcı admin değilse, yazar kontrolü yap
     const article = await Article.findByPk(req.params.id); // Makale ID'sini kontrol et
     if (!article) {
@@ -44,3 +44,8 @@ export const isAdminOrAuthor = async (req, res, next) => {
   }
 };
 
+module.exports = {
+  isAdmin,
+  isAuthor,
+  isAdminOrAuthor
+};

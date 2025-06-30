@@ -1,7 +1,6 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../../config/database');
 const Role = require('./role.model');
-const Comment = require('../comment.models/comment.model'); // Comment modelini içe aktarın
 const bcrypt = require('bcrypt'); // Şifre hashleme için bcrypt modülü
 
 const User = sequelize.define('User', {
@@ -75,8 +74,8 @@ User.prototype.validatePassword = async function (password) {
   return bcrypt.compare(password, this.password);
 };
 
-User.associate = (models) => {
-  User.hasMany(models.Comment, { as: 'comments', foreignKey: 'userId' });
-};
 
+User.associate = (models) => {
+  User.hasMany(models.Comment, { foreignKey: 'userId', as: 'comment' });
+};
 module.exports = User;
