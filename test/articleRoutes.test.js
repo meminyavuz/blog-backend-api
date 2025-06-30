@@ -1,6 +1,6 @@
 const request = require('supertest');
 const app = require('../src/app'); // Express uygulamanızın ana dosyası
-const { sequelize } = require('../models'); // Sequelize bağlantısı
+const { sequelize } = require('../src/models/index'); // Sequelize bağlantısı
 
 let token; // Kullanıcı oturum token'ı
 let adminToken; // Admin oturum token'ı
@@ -8,19 +8,30 @@ let articleId; // Test için oluşturulan makale ID'si
 let slug; // Test için oluşturulan makale slug'ı
 
 beforeAll(async () => {
-    // Veritabanını senkronize et
-    await sequelize.sync({ force: true });
-  
-    // Mevcut kullanıcı bilgilerini kullanın
-    const userId = '460f4aeb-db36-436e-9842-b7bdd485f547'; // Mevcut kullanıcı ID'si
-    const adminId = '231bbed9-8246-4333-9ad8-abdd0534adbc'; // Mevcut admin ID'si
-    const authorRoleId = '63a3db30-e125-410b-9163-d158bc3f0c2b'; // Mevcut "reader" rolü ID'si
-    const adminRoleId = 'e985d994-02a6-4213-92c4-c744eadcc955'; // Mevcut "admin" rolü ID'si
+    // Veritabanını sıfırla ve senkronize et
+    await sequelize.sync({ force: false });
 
-    // Kullanıcı ve admin için token oluştur
-    token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQ2MGY0YWViLWRiMzYtNDM2ZS05ODQyLWI3YmRkNDg1ZjU0NyIsInJvbGVJZCI6IjYzYTNkYjMwLWUxMjUtNDEwYi05MTYzLWQxNThiYzNmMGMyYiIsImlhdCI6MTc1MTI5NTg0MSwiZXhwIjoxNzUxMjk5NDQxfQ.qLkvCNDrl8pU1e5uMdk387dtwxBhdrghQRfke8RflhI'; // Mevcut kullanıcı için JWT token
+    // Kullanıcı için giriş yap ve token al
+    const userLoginResponse = await request(app)
+        .post('/api/users/login')
+        .send({
+            email: 'testuser@example.com',
+            password: 'password123',
+        });
 
-    adminToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjIzMWJiZWQ5LTgyNDYtNDMzMy05YWQ4LWFiZGQwNTM0YWRiYyIsInJvbGVJZCI6ImU5ODVkOTk0LTAyYTYtNDIxMy05MmM0LWM3NDRlYWRjYzk1NSIsImlhdCI6MTc1MTI5NTg2NSwiZXhwIjoxNzUxMjk5NDY1fQ.XcMfIG3nSse2mMkhfSQcuzWW7TEPFeMYTSf1xFQhRec'; // Mevcut admin için JWT token
+    token = userLoginResponse.body.token; // Kullanıcı token'ini kaydet
+
+    // Admin için giriş yap ve token al
+    const adminLoginResponse = await request(app)
+        .post('/api/users/login')
+        .send({
+            email: 'testadmin@example.com',
+            password: 'password123',
+        });
+
+    adminToken = adminLoginResponse.body.token; // Admin token'ini kaydet
+    console.log('Admin token:', adminToken);
+    console.log('User token:', token);
 });
 
 afterAll(async () => {

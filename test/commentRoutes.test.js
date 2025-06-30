@@ -1,6 +1,6 @@
 const request = require('supertest');
 const app = require('../src/app'); // Express uygulamanızın ana dosyası
-const { sequelize } = require('../models'); // Sequelize bağlantısı
+const { sequelize } = require('../src/models/index'); // Sequelize bağlantısı
 const Article = require('../src/models/article.models/article.model');
 const User = require('../src/models/user.models/user.model');
 
@@ -10,19 +10,7 @@ let articleId;
 
 beforeAll(async () => {
   // Veritabanını sıfırla ve senkronize et
-  await sequelize.sync({ force: true });
-
-  // Mevcut bir kullanıcıyı kullan
-  const user = await User.findOne({ where: { email: 'johndoe@example.com' } });
-  if (!user) {
-    throw new Error('Test için gerekli kullanıcı bulunamadı.');
-  }
-
-  // Mevcut bir admini kullan
-  const admin = await User.findOne({ where: { email: 'admin@example.com' } });
-  if (!admin) {
-    throw new Error('Test için gerekli admin bulunamadı.');
-  }
+  await sequelize.sync({ force: false });
 
   // Mevcut bir makaleyi kullan
   const article = await Article.findOne({ where: { title: 'Test Article' } });
@@ -32,8 +20,25 @@ beforeAll(async () => {
 
   articleId = article.id;
 
-  userToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQ2MGY0YWViLWRiMzYtNDM2ZS05ODQyLWI3YmRkNDg1ZjU0NyIsInJvbGVJZCI6IjYzYTNkYjMwLWUxMjUtNDEwYi05MTYzLWQxNThiYzNmMGMyYiIsImlhdCI6MTc1MTI5NTg0MSwiZXhwIjoxNzUxMjk5NDQxfQ.qLkvCNDrl8pU1e5uMdk387dtwxBhdrghQRfke8RflhI";
-  adminToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjIzMWJiZWQ5LTgyNDYtNDMzMy05YWQ4LWFiZGQwNTM0YWRiYyIsInJvbGVJZCI6ImU5ODVkOTk0LTAyYTYtNDIxMy05MmM0LWM3NDRlYWRjYzk1NSIsImlhdCI6MTc1MTI5NTg2NSwiZXhwIjoxNzUxMjk5NDY1fQ.XcMfIG3nSse2mMkhfSQcuzWW7TEPFeMYTSf1xFQhRec";
+  // Kullanıcı için giriş yap ve token al
+  const userLoginResponse = await request(app)
+    .post('/api/users/login')
+    .send({
+      email: 'testuser@example.com',
+      password: 'password123',
+    });
+
+  token = userLoginResponse.body.token; // Kullanıcı token'ini kaydet
+
+  // Admin için giriş yap ve token al
+  const adminLoginResponse = await request(app)
+    .post('/api/users/login')
+    .send({
+      email: 'testadmin@example.com',
+      password: 'password123',
+    });
+
+  adminToken = adminLoginResponse.body.token; // Admin token'ini kaydet
 });
 
 afterAll(async () => {
@@ -45,7 +50,7 @@ describe('Comment Routes', () => {
     it('should create a comment', async () => {
       const res = await request(app)
         .post('/api/comments/add')
-        .set('Authorization', `Bearer ${userToken}`)
+        .set('Authorization', `Bearer ${token}`)
         .send({
           articleId,
           content: 'This is a test comment.',
@@ -60,7 +65,7 @@ describe('Comment Routes', () => {
     it('should return 400 if required fields are missing', async () => {
       const res = await request(app)
         .post('/api/comments/add')
-        .set('Authorization', `Bearer ${userToken}`)
+        .set('Authorization', `Bearer ${token}`)
         .send({});
 
       expect(res.statusCode).toBe(400);
@@ -72,7 +77,7 @@ describe('Comment Routes', () => {
     it('should update a comment', async () => {
       const res = await request(app)
         .put(`/api/comments/update/${commentId}`)
-        .set('Authorization', `Bearer ${userToken}`)
+        .set('Authorization', `Bearer ${token}`)
         .send({
           content: 'This is an updated test comment.',
         });
@@ -85,7 +90,7 @@ describe('Comment Routes', () => {
     it('should return 404 if comment is not found', async () => {
       const res = await request(app)
         .put('/api/comments/update/non-existent-id')
-        .set('Authorization', `Bearer ${userToken}`)
+        .set('Authorization', `Bearer ${token}`)
         .send({
           content: 'This is an updated test comment.',
         });
