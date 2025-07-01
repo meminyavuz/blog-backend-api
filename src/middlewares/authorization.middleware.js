@@ -33,7 +33,7 @@ const isAdminOrAuthor = async (req, res, next) => {
       return res.status(404).json({ message: 'Article not found' });
     }
 
-    if (article.userId !== req.user.id) {
+    if (article.authorId !== req.user.id) {
       return res.status(403).json({ message: 'Access denied. You are not the author of this article.' });
     }
 

@@ -1,7 +1,7 @@
 const app = require('./app');
 const { sequelize } = require('./config/database.js');
 const { connectRabbitMQ } = require('./services/rabbitmq.service.js');
-
+const { consumeQueue } = require('./services/email.consumer.js');
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, async () => {
@@ -29,6 +29,7 @@ app.listen(PORT, async () => {
   try {
     await connectRabbitMQ();
     console.log('RabbitMQ connected!');
+    await consumeQueue(); // Tüketiciyi başlat
   } catch (err) {
     console.error('RabbitMQ connection failed:', err);
     process.exit(1);

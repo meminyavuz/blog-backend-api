@@ -59,7 +59,7 @@ const updateArticle = async (req, res) => {
 
     article.title = title || article.title;
     article.content = content || article.content;
-    article.status = status || article.status;
+    article.statusId = status || article.statusId;
 
     await article.save();
 
@@ -190,7 +190,7 @@ const listPublishedArticles = async (req, res) => {
     if (!publishedStatus) {
       return res.status(400).json({ message: 'Published status not found in the database.' });
     }
-
+    
     const where = { statusId: publishedStatus.id }; // Sadece "published" durumundaki makaleler
     if (authorId) where.authorId = authorId
     if (title) where.title = { [Op.like]: `%${title}%` }; // Başlıkta arama

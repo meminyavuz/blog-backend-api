@@ -3,7 +3,6 @@ const { sequelize } = require('../../config/database');
 const Role = require('../user.models/role.model');
 const User = require('../user.models/user.model'); // User modelini içe aktar
 const Article = require('../article.models/article.model'); // Article modelini içe aktar
-const bcrypt = require('bcrypt'); // Şifre hashleme için bcrypt modülü
 
 const Comment = sequelize.define('Comment', {
     id: {

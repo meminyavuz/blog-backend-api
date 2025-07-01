@@ -12,8 +12,10 @@ const requestLogger = require('./middlewares/requestLogger.middleware.js');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocs = require('./config/swagger');
 
+const envFile = process.env.NODE_ENV === 'development' ? '.env.docker' : '.env';
 // Load Environment Variables
-dotenv.config();
+dotenv.config(envFile);
+console.log(`Loaded environment variables from ${envFile}`);
 
 // Initialize Express App
 const app = express();

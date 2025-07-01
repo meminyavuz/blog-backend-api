@@ -16,7 +16,7 @@ const { publishedArticlesLimiter } = require('../middlewares/rateLimit.middlewar
 
 
 //Readerlar için
-router.get('/published', authenticate, publishedArticlesLimiter, cacheMiddleware(600), listPublishedArticles);
+router.get('/published', authenticate, publishedArticlesLimiter, listPublishedArticles);
 
 // Yazarlar için
 router.get('/my-articles', authenticate, isAuthor, cacheMiddleware(600), listUserArticles);

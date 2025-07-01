@@ -5,6 +5,7 @@ yarn-error.log
 
 # Environment Variables
 .env
+.env.docker
 
 # Logs
 logs/

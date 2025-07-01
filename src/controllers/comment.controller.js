@@ -1,6 +1,7 @@
 const Comment = require('../models/comment.models/comment.model'); 
 const Article = require('../models/article.models/article.model'); 
 const User = require('../models/user.models/user.model');
+const Role = require('../models/user.models/role.model'); // Rol modelini içe aktar
 const createCommentDTO = require('../dtos/comment.dtos/createComment.dto');
 const updateCommentDTO = require('../dtos/comment.dtos/updateComment.dto');
 
@@ -117,15 +118,20 @@ const listCommentsByArticle = async (req, res) => {
         // Makaleye ait yorumları getir
         const comments = await Comment.findAll({
             where: { articleId }, // Yorumları makale ID'sine göre filtrele
-            attributes: ['id', 'content', 'createdAt'], // Yorum bilgileri
+            attributes: ['id', 'content', 'userId', 'createdAt'], // Yorum bilgileri
         });
 
         if (!comments || comments.length === 0) {
             return res.status(404).json({ message: 'No comments found for this article.' });
         }
 
+        comments.forEach(comment => {
+            console.log(comment.userId);
+          });
+
         // Yorumlara ait kullanıcıları getir
         const userIds = comments.map((comment) => comment.userId); // Yorumlardaki kullanıcı ID'lerini al
+        console.log(userIds);
         const users = await User.findAll({
             where: { id: userIds }, // Kullanıcıları ID'lerine göre filtrele
             attributes: ['id', 'fullName', 'email'], // Kullanıcı bilgileri

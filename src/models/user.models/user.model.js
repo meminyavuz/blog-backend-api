@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../../config/database');
 const Role = require('./role.model');
-const bcrypt = require('bcrypt'); // Şifre hashleme için bcrypt modülü
+const bcrypt = require('bcryptjs');
 
 const User = sequelize.define('User', {
   id: {
