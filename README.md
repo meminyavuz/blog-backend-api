@@ -16,6 +16,8 @@ Kullanıcılar makale oluşturabilir, yorum yapabilir ve rollere göre yetkilend
 - 📝 Makale oluşturma, listeleme ve güncelleme  
 - 💬 Yorum ekleme ve listeleme  
 - 🛡️ Kullanıcı rolleri yönetimi (Admin yetkileri)  
+- 📨 RabbitMQ ile e-posta kuyruğu yönetimi  
+- ⚡ Redis ile cache yönetimi  
 
 ---
 
